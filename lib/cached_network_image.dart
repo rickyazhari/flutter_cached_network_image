@@ -254,6 +254,7 @@ class _CachedNetworkImageState extends State<CachedNetworkImage>
         .obtainKey(createLocalImageConfiguration(context))
         .then<void>((CachedNetworkImageProvider key) {
       if (CachedNetworkImage._registeredErrors.contains(key)) {
+        
         setState(() => _hasError = true);
       }
     });
@@ -266,11 +267,21 @@ class _CachedNetworkImageState extends State<CachedNetworkImage>
   void didUpdateWidget(CachedNetworkImage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.imageUrl != oldWidget.imageUrl ||
-        widget.placeholder != widget.placeholder) {
+        widget.placeholder != oldWidget.placeholder) {
       _imageProvider = new CachedNetworkImageProvider(widget.imageUrl,
           errorListener: _imageLoadingFailed);
-
-      _resolveImage();
+      if(_hasError){
+        if(mounted){
+          setState(() {
+            _imageResolver._imageInfo = null;
+            _hasError = false;
+            _updatePhase();  
+            _resolveImage();       
+          });
+        }
+      }else{
+        _resolveImage();
+      }
     }
   }
 
